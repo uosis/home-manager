@@ -6,12 +6,14 @@ let
 
   cfg = config.services.gpg-agent;
 
+  gpgPackage = config.programs.gpg.package;
+
   gpgInitStr = ''
     GPG_TTY="$(tty)"
     export GPG_TTY
   ''
   + optionalString cfg.enableSshSupport
-      "${pkgs.gnupg}/bin/gpg-connect-agent updatestartuptty /bye > /dev/null";
+      "${gpgPackage}/bin/gpg-connect-agent updatestartuptty /bye > /dev/null";
 
 in
 
@@ -212,7 +214,7 @@ in
 
       home.sessionVariables =
         optionalAttrs cfg.enableSshSupport {
-          SSH_AUTH_SOCK = "$(${pkgs.gnupg}/bin/gpgconf --list-dirs agent-ssh-socket)";
+          SSH_AUTH_SOCK = "$(${gpgPackage}/bin/gpgconf --list-dirs agent-ssh-socket)";
         };
 
       programs.bash.initExtra = gpgInitStr;
@@ -242,9 +244,9 @@ in
         };
 
         Service = {
-          ExecStart = "${pkgs.gnupg}/bin/gpg-agent --supervised"
+          ExecStart = "${gpgPackage}/bin/gpg-agent --supervised"
             + optionalString cfg.verbose " --verbose";
-          ExecReload = "${pkgs.gnupg}/bin/gpgconf --reload gpg-agent";
+          ExecReload = "${gpgPackage}/bin/gpgconf --reload gpg-agent";
         };
       };
 
