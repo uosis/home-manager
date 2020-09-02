@@ -18,6 +18,12 @@ in {
   options.programs.gpg = {
     enable = mkEnableOption "GnuPG";
 
+    package = mkOption {
+      type = types.package;
+      default = pkgs.gnupg;
+      description = "GnuPG package to use.";
+    };
+
     settings = mkOption {
       type = types.attrsOf (types.either types.str types.bool);
       example = {
@@ -54,7 +60,7 @@ in {
       use-agent = mkDefault true;
     };
 
-    home.packages = [ pkgs.gnupg ];
+    home.packages = [ cfg.package ];
 
     home.file.".gnupg/gpg.conf".text = cfgText;
   };
