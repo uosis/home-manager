@@ -110,11 +110,40 @@ in
         type = types.bool;
         default = true;
         description = ''
+          DEPRECATED: use <option>scDaemon.enable</option> instead.
+
           Make use of the scdaemon tool. This option has the effect of
           enabling the ability to do smartcard operations. When
           disabled, this option passes
           <option>disable-scdaemon</option> setting to gpg-agent.
         '';
+      };
+
+      scDaemon = {
+        enable = mkOption {
+          type = types.bool;
+          default = cfg.enableScDaemon;
+          description = ''
+            Make use of the scdaemon tool. This option has the effect of
+            enabling the ability to do smartcard operations. When
+            disabled, this option passes
+            <option>disable-scdaemon</option> setting to gpg-agent.
+          '';
+        };
+
+        config = mkOption {
+          type = types.lines;
+          default = "";
+          example = ''
+            # Enable Yubikey access
+            reader-port Yubico Yubi
+            shared-access
+          '';
+          description = ''
+            Configuration lines to append to the scdaemon
+            configuration file.
+          '';
+        };
       };
 
       extraConfig = mkOption {
@@ -159,7 +188,7 @@ in
         ++
         optional (!cfg.grabKeyboardAndMouse) "no-grab"
         ++
-        optional (!cfg.enableScDaemon) "disable-scdaemon"
+        optional (!cfg.scDaemon.enable) "disable-scdaemon"
         ++
         optional (cfg.defaultCacheTtl != null)
           "default-cache-ttl ${toString cfg.defaultCacheTtl}"
@@ -178,6 +207,8 @@ in
         ++
         [ cfg.extraConfig ]
       );
+
+      home.file.".gnupg/scdaemon.conf".text = cfg.scDaemon.config;
 
       home.sessionVariables =
         optionalAttrs cfg.enableSshSupport {
